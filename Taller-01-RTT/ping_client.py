@@ -51,7 +51,7 @@ def plot(data):
     times, rtts, rtts_avg = moving_average(times, rtts, args.window_size)
     plt.figure()
     # Descomentar para ver los resultados sin media móvil
-    # plt.plot(times, rtts, label='rtt')
+    plt.plot(times, rtts, label='rtt')
     plt.plot(times, rtts_avg, label='media móvil')
     plt.xlabel("Tiempo desde inicio (s)")
     plt.ylabel("RTT (s)")
@@ -66,8 +66,9 @@ start = time.time()
 # COMPLETAR
 # Se puede consultar los argumentos del programa usando args.duration, args.window_size, etc.
 rtts = []
-while True:
-    pass
-
+while time.time() - start < args.duration:
+    rtt = send_ping()
+    time1 = time.time()
+    rtts.append((time1, rtt))
 if args.plot:
     plot(rtts)
