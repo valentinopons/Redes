@@ -16,10 +16,11 @@ out_filename = args.file
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(("0.0.0.0", 12001))
 with open(out_filename, "wb") as out:
+    last_frame_received = None
     while True:
         raw_data, addr = sock.recvfrom(common.STOPANDWAIT_DATA_FRAME_SIZE)
         time.sleep(args.delay)
-        (is_last, data) = common.decode_stopandwait_data_frame(raw_data)
+        (is_last, data, frame_bool) = common.decode_stopandwait_data_frame(raw_data)
         
         if random.random() < args.loss:
             print(f"Simulando perdida de frame de datos")
@@ -31,10 +32,10 @@ with open(out_filename, "wb") as out:
         else:
             sock.sendto(ack_frame, addr)
             time.sleep(args.delay)
-
-        out.write(data)
-        out.flush()
-
+        if last_frame_received != frame_bool:
+            out.write(data)
+            out.flush()
+            last_frame_received = frame_bool
         if is_last:
             print("ultimo frame -> terminamos")
             break

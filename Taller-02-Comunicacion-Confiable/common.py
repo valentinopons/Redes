@@ -83,18 +83,29 @@ def decode_dumb_data_frame(frame):
 # indiferente
 
 STOPANDWAIT_DATA_HEADER_SIZE = 3
-STOPANDWAIT_DATA_FRAME_SIZE = STOPANDWAIT_DATA_HEADER_SIZE + CHUNK_SIZE
+STOPANDWAIT_DATA_FRAME_SIZE = STOPANDWAIT_DATA_HEADER_SIZE + CHUNK_SIZE + 1
 STOPANDWAIT_ACK_FRAME_SIZE = 1
 
-def encode_stopandwait_data_frame(is_last, data):
-    return struct.pack('!bh', bool(is_last), len(data)) + pad_to_chunk_size(data)
+def encode_stopandwait_data_frame(is_last, data, extra_flag=False):
+    """Empaqueta un frame stop-and-wait con un bit extra al final.
+
+    Formato: [1b is_last][2b length][CHUNK_SIZE bytes padded data][1b extra_flag]
+    """
+    header = struct.pack('!bh', bool(is_last), len(data))
+    padded = pad_to_chunk_size(data)
+    flag = struct.pack('!?', bool(extra_flag))
+    return header + padded + flag
 
 def decode_stopandwait_data_frame(frame):
     (is_last, length) = struct.unpack('!bh', frame[:STOPANDWAIT_DATA_HEADER_SIZE])
     assert is_last in (0, 1)
-    padded_data = frame[STOPANDWAIT_DATA_HEADER_SIZE:]
+    start = STOPANDWAIT_DATA_HEADER_SIZE
+    padded_data = frame[start:start + CHUNK_SIZE]
     data = padded_data[:length]
-    return bool(is_last), data
+    # byte after the chunk is the alternating bit
+    extra_flag_byte = frame[start + CHUNK_SIZE:start + CHUNK_SIZE + 1]
+    extra_flag = struct.unpack('!?', extra_flag_byte)[0]
+    return bool(is_last), data, bool(extra_flag)
 
 def encode_stopandwait_ack_frame():
     return b'x'
