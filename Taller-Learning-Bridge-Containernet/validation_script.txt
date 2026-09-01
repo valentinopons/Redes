@@ -1,0 +1,22 @@
+echo "--- Initial Nodes & Net ---"
+nodes
+net
+echo "--- Initial MAC Table B1 (Should be empty) ---"
+sh ovs-appctl fdb/show B1
+echo "--- Ping X to Y ---"
+X ping -c 1 10.0.0.2
+echo "--- MAC Table B1 after ping ---"
+sh ovs-appctl fdb/show B1
+echo "--- MAC Table B2 after ping ---"
+sh ovs-appctl fdb/show B2
+echo "--- MAC Table B3 after ping ---"
+sh ovs-appctl fdb/show B3
+echo "--- Breaking link B2-eth2 ---"
+sh ip link set B2-eth2 down
+echo "--- Ping X to Y (Should fail) ---"
+X ping -c 1 10.0.0.2
+echo "--- Restoring link B2-eth2 ---"
+sh ip link set B2-eth2 up
+echo "--- Ping X to Y (Should succeed) ---"
+X ping -c 1 10.0.0.2
+exit

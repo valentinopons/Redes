@@ -1,0 +1,5 @@
+echo "--- Ping para generar trafico y aprender MACs ---"
+X ping -c 1 10.0.0.2
+echo "--- Ejecutando monitor ---"
+sh python3 fdb_monitor.py --bridges B1 B2 B3 --interval 1 --duration 5 --outdir results
+exit
